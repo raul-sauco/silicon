@@ -1,0 +1,13 @@
+# Build artifacts
+build/
+**/build/
+
+# Arduino
+*.elf
+*.hex
+*.bin
+*.map
+
+# Editors
+.cache/
+compile_commands.json

@@ -14,7 +14,7 @@ to ESP32 and beyond.
 
 ```bash
 arduino-cli compile --fqbn arduino:avr:uno <sketch>/
-arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:uno <sketch>/
+arduino-cli upload -p /dev/<device> --fqbn arduino:avr:uno <sketch>/
 ```
 
 ### Serial
@@ -38,6 +38,25 @@ arduino-cli core update-index
 arduino-cli core install arduino:avr      # for Uno/Nano/Mega
 # arduino-cli core install arduino:megaavr  # for Nano Every
 # arduino-cli core install esp32:esp32      # for ESP32
+```
+
+### System
+
+**Permanent** Add your user to the dialout group. On Linux, serial ports like
+/dev/ttyACM0 are owned by the dialout group, so only members can access them.
+This is the permanent fix but requires a logout/login to take effect because
+group memberships are loaded at session start.
+
+```sh
+usermod -aG dialout $USER
+```
+
+**Temporary** Directly gives read/write permission to everyone on that specific
+device file right now, bypassing the group check. It works immediately but is
+temporary — resets when you unplug and replug the board.
+
+```sh
+chmod a+rw /dev/<device>
 ```
 
 ### Neovim
