@@ -1,0 +1,10 @@
+CompileFlags:
+  Remove:
+    - "-mmcu=*"
+    - "-mrelax"
+    - "-flto"
+    - "-fno-fat-lto-objects"
+    - "-fno-threadsafe-statics"
+    - "-fpermissive"
+  Add:
+    - "-std=c++11"

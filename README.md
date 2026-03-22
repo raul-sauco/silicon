@@ -5,11 +5,6 @@ to ESP32 and beyond.
 
 ## Use
 
-### Tools
-
-- `arduino-cli` — compile & upload
-- Neovim + `arduino-language-server` — editor setup
-
 ### Flash
 
 ```bash
@@ -20,14 +15,20 @@ arduino-cli upload -p /dev/<device> --fqbn arduino:avr:uno <sketch>/
 ### Serial
 
 ```bash
-picocom -b 9600 /dev/ttyUSB0
+# picocom -b 9600 /dev/ttyACM0
+picocom -b 9600 /dev/<device>
 ```
+
+The -b 9600 is the baud rate — it must match what's in your sketch.
+Exit using `Ctrl+A` then `Ctrl+X`.
 
 ## Setup
 
 ### Packages
 
 ```sh
+sudo apt install clangd picocom
+
 # Via package manager (or download binary from GitHub)
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 # Move to PATH if needed
@@ -41,6 +42,8 @@ arduino-cli core install arduino:avr      # for Uno/Nano/Mega
 ```
 
 ### System
+
+Write to device permissions.
 
 **Permanent** Add your user to the dialout group. On Linux, serial ports like
 /dev/ttyACM0 are owned by the dialout group, so only members can access them.
