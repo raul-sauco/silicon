@@ -1,0 +1,18 @@
+CompileFlags:
+  Compiler: clangd
+  Remove:
+    - "-mmcu=*"
+    - "-mrelax"
+    - "-flto"
+    - "-fno-fat-lto-objects"
+    - "-fno-threadsafe-statics"
+    - "-fpermissive"
+    - "-fno-exceptions"
+    - "-std=gnu++11"
+    - "-std=gnu11"
+    - "-Wno-error=*"
+    - "-MMD"
+  Add:
+    - "-std=c++17"
+    - "-x"
+    - "c++"
