@@ -1,5 +1,5 @@
 CompileFlags:
-  Compiler: clangd
+  Compiler: /usr/bin/clang++-22
   Remove:
     - "-mmcu=*"
     - "-mrelax"
