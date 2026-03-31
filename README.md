@@ -12,6 +12,14 @@ arduino-cli compile --fqbn arduino:avr:uno <sketch>/
 arduino-cli upload -p /dev/<device> --fqbn arduino:avr:uno <sketch>/
 ```
 
+### Install libraries
+
+On the dev machine local libraries are kept in `/lib` but not committed to git.
+
+```bash
+arduino-cli lib install --zip-path lib/<lib>.zip
+```
+
 ### Serial
 
 ```bash
