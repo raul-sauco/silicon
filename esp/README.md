@@ -133,3 +133,9 @@ automatically):
 [toolchain]
 channel = "esp"
 ```
+
+## Tools
+
+- [Wokwi][wokwi]
+
+[wokwi]: https://wokwi.com/
