@@ -1,5 +1,11 @@
 # ESP32
 
+## References
+
+- [ESP32-S3-WROOM2 Datasheet](https://documentation.espressif.com/esp32-s3-wroom-2_datasheet_en.pdf)
+- [probe-rs Documentation](https://probe.rs/)
+- [The Rust on ESP Book](https://docs.espressif.com/projects/rust/book/)
+
 ## Installing Packages
 
 ```bash
