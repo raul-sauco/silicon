@@ -6,6 +6,28 @@
 - [probe-rs Documentation](https://probe.rs/)
 - [The Rust on ESP Book](https://docs.espressif.com/projects/rust/book/)
 
+### Electronics Books
+
+#### Fundamentals
+
+- [Practical Electronics for Inventors](https://www.mhprofessional.com/practical-electronics-for-inventors-fourth-edition-9781259587542-usa) — Scherz & Monk (4th ed.)
+- [Learning the Art of Electronics](https://learningtheartofelectronics.com/) — Hayes & Horowitz (lab companion)
+- [The Art of Electronics](https://artofelectronics.net/) — Horowitz & Hill (3rd ed.)
+- [Make: Electronics](https://www.makershed.com/products/make-electronics-3rd-edition) — Charles Platt
+
+#### Digital Electronics
+
+- [Digital Design and Computer Architecture](https://www.elsevier.com/books/digital-design-and-computer-architecture-risc-v-edition/harris/978-0-12-820064-3) — Harris & Harris (RISC-V ed.)
+- [The Art of Electronics: The x-Chapters](https://artofelectronics.net/the-x-chapters/) — Horowitz & Hill
+- [Digital Electronics: A Practical Introduction](https://www.pearson.com/en-us/subject-catalog/p/digital-electronics-a-practical-approach-with-vhdl/P200000003258) — Kleitz
+
+#### Embedded & Microcontrollers
+
+- [The Embedded Rust Book](https://docs.rust-embedded.org/book/) — Rust Embedded Working Group
+- [The Rust on ESP Book](https://docs.espressif.com/projects/rust/book/) — Espressif
+- [Programming Embedded Systems](https://www.oreilly.com/library/view/programming-embedded-systems/0596009836/) — Barr & Massa (O'Reilly)
+- [Kolban's Book on ESP32](https://leanpub.com/kolban-ESP32) — Neil Kolban (free PDF)
+
 ## Installing Packages
 
 ```bash
