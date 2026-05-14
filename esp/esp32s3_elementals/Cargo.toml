@@ -24,6 +24,7 @@ static_cell      = "2.1.1"
 nb = "1.1.0"
 esp-backtrace = { version = "0.19.0", features = ["esp32s3", "panic-handler", "println"] }
 esp-println = { version = "0.17.0", features = ["esp32s3", "jtag-serial"], default-features = false }
+bme280-rs = "0.4.1"
 
 
 # For fine tuning these settings, please refer to https://doc.rust-lang.org/cargo/reference/profiles.html
