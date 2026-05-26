@@ -1123,7 +1123,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "esp32s3_esp_now_button_led"
+name = "esp32s3_esp_now"
 version = "0.1.0"
 dependencies = [
  "critical-section",

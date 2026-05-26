@@ -1,12 +1,12 @@
 [package]
 edition      = "2024"
-name         = "esp32s3_esp_now_button_led"
+name         = "esp32s3_esp_now"
 rust-version = "1.88"
 version      = "0.1.0"
 
 [[bin]]
-name = "esp32s3_esp_now_button_led"
-path = "./src/bin/main.rs"
+name = "esp32s3_esp_now"
+path = "./src/bin/hello.rs"
 
 [dependencies]
 esp-alloc = "0.10.0"
