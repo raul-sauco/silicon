@@ -153,3 +153,19 @@ the light"), and the neural network handles the phonetic matching.
 
 This video provides a practical walkthrough of connecting the I2S microphone and
 amplifier to an ESP32-S3 and setting up the firmware for voice interaction.
+
+## Truma combi remote
+
+Most Truma Combi use the LIN (Local Interconnect Network) single wire protocol.
+
+> Need to check the model to confirm!
+
+### Hardware requirements
+
+The key piece is a LIN bus transceiver — a small chip (like the **TJA1020**
+or **MCP2003**) that converts between the LIN single-wire bus and the UART TX/RX
+pins your ESP32 understands.
+
+On the ESP32, UART2 is used (TX on GPIO17, RX on GPIO16), connected to the
+TJA1020. No level shifter is needed — it works on 3.3V logic levels even when
+the TJA1020 is powered from 5V.
