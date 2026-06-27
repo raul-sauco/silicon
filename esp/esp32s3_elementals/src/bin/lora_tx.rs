@@ -1,13 +1,13 @@
-//! ESP32-C3 Pin    RA-02 Pin    Wire
+//! ESP32-S3 Pin    RA-02 Pin    Wire
 //! ───────────────────────────────────
 //! 3.3V            3.3V         Red
 //! GND             GND          Black
-//! GPIO3           RST          Purple
+//! GPIO11          RST          Purple
 //! GPIO6           NSS/CS       Blue
 //! GPIO5           SCK          Yellow
 //! GPIO10          MOSI         Green
 //! GPIO7           MISO         White
-//! GPIO20          DIO0         Orange
+//! GPIO9           DIO0         Orange
 
 #![no_std]
 #![no_main]
@@ -45,9 +45,8 @@ use panic_rtt_target as _;
 esp_bootloader_esp_idf::esp_app_desc!();
 
 const FREQ: u32 = 433_000_000;
-// Look like the AI-Thinker boards may have the RFO disconnected
-const TX_POWER: i32 = 14; // dBm — Trying to use PA_BOOST
-const MSG: &[u8] = b"Hello Morty!";
+const TX_POWER: i32 = 14;
+const MSG: &[u8] = b"Hello S3!";
 
 #[allow(
     clippy::large_stack_frames,
@@ -56,7 +55,7 @@ const MSG: &[u8] = b"Hello Morty!";
 #[esp_rtos::main]
 async fn main(spawner: Spawner) -> ! {
     // generator version: 1.3.0
-    // generator parameters: --chip esp32c3 -o probe-rs -o neovim -o embassy -o unstable-hal -o esp32c3-mini-1 -o defmt -o panic-rtt-target
+    // generator parameters: --chip esp32s3 -o esp32s3-wroom-2 -o probe-rs -o neovim -o embassy -o unstable-hal
 
     rtt_target::rtt_init_defmt!();
 
@@ -65,17 +64,16 @@ async fn main(spawner: Spawner) -> ! {
 
     // The following pins are used to bootstrap the chip. They are available
     // for use, but check the datasheet of the module for more information on them.
-    // - GPIO2
-    // - GPIO8
-    // - GPIO9
+    // - GPIO0
+    // - GPIO3
+    // - GPIO45
+    // - GPIO46
     // These GPIO pins are in use by some feature of the module and should not be used.
-    let _ = peripherals.GPIO11;
-    let _ = peripherals.GPIO12;
-    let _ = peripherals.GPIO13;
-    let _ = peripherals.GPIO14;
-    let _ = peripherals.GPIO15;
-    let _ = peripherals.GPIO16;
-    let _ = peripherals.GPIO17;
+    let _ = peripherals.GPIO33;
+    let _ = peripherals.GPIO34;
+    let _ = peripherals.GPIO35;
+    let _ = peripherals.GPIO36;
+    let _ = peripherals.GPIO37;
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     let sw_interrupt =
@@ -101,9 +99,9 @@ async fn main(spawner: Spawner) -> ! {
     .into_async();
 
     let cs = Output::new(peripherals.GPIO6, Level::High, OutputConfig::default());
-    let reset = Output::new(peripherals.GPIO3, Level::High, OutputConfig::default());
+    let reset = Output::new(peripherals.GPIO11, Level::High, OutputConfig::default());
     let dio0 = Input::new(
-        peripherals.GPIO20,
+        peripherals.GPIO9,
         InputConfig::default().with_pull(Pull::None),
     );
 
@@ -136,13 +134,9 @@ async fn main(spawner: Spawner) -> ! {
         .create_tx_packet_params(8, false, true, false, &mod_params)
         .unwrap();
 
-    info!("LoRa TX ready - sending periodic message");
-    let mut count: u32 = 0;
+    info!("LoRa TX ready - sending periodic Hello S3");
 
     loop {
-        info!("loop iteration {}", count);
-        count = count.wrapping_add(1);
-
         lora.prepare_for_tx(&mod_params, &mut tx_params, TX_POWER, MSG)
             .await
             .unwrap();
@@ -153,6 +147,4 @@ async fn main(spawner: Spawner) -> ! {
         }
         Timer::after(Duration::from_secs(1)).await;
     }
-
-    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.1.0/examples
 }

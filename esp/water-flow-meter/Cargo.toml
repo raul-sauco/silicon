@@ -9,6 +9,7 @@ name = "water-flow-meter"
 path = "./src/bin/main.rs"
 
 [dependencies]
+embedded-hal-bus = { version = "0.3.0", features = ["async"] }
 esp-hal = { version = "~1.1.0", features = ["defmt", "esp32c3", "unstable"] }
 
 esp-rtos = { version = "0.3.0", features = ["defmt", "embassy", "esp32c3"] }
@@ -23,6 +24,9 @@ rtt-target       = { version = "0.6.2", features = ["defmt"] }
 
 critical-section = "1.2.0"
 static_cell      = "2.1.1"
+
+# Project dependencies
+lora-phy = { version = "3.0.1", default-features = false }
 
 
 # For fine tuning these settings, please refer to https://doc.rust-lang.org/cargo/reference/profiles.html

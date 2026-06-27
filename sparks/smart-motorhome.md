@@ -51,58 +51,20 @@ Connected" or "Engine Running"):
 
     JP13 (Pin 2): Mains presence signal (from the battery charger).
 
-Best Websites for the PDF Schematics
+### New control/display panel
 
-If you need the full wiring diagrams (which show which colored wires go to which
-pin), these three sites host the official PDF "Training Manuals":
+The main IC in the control/display panel board is broken, we need to build
+a new control panel.
 
-- A&N Caravan Services: They have a dedicated "Resources" page with the most
-  accurate repair manuals for Nordelettronica units in the UK/EU.
-- Camperpunt.nl: Hosts a "Kit 2006" manual that includes the full internal logic
-  and wiring for the NE185-S.
-- ManualsLib: Search for "Nordelettronica NE185-15S" to get the 16-page
-  technical layout.
+#### Tasks
 
-Reference Video: If you want to see the physical layout of these JP connectors,
-this video shows the board being probed:
-[REPARACION CENTRALITA NORDELETTRONICA NE 185](https://www.youtube.com/watch?v=2wb2FjD63Jo).
+- Need to decode the protocol used to communicate with the fuse box via the
+  RS485 wire, this [repo](https://github.com/class142/ne-rs485/blob/master/spec.md)
+  may help
 
-### Diagnosing the Nordelettronica NE185
+#### Progress
 
-Set your lab power supply to 13.5V and limit the current to 1.0A for
-bench testing.
-
----
-
-#### 1. Power Input & Rail Stability
-
-- Main Input: Connect (+) to J2 and (-) to J3 or J4.
-- Current Check: Normal standby draw is 50mA to 150mA. If 0mA, check the
-  input protection diode near J2.
-- Logic Rail: Locate the voltage regulator. Measure the output pin; you
-  must see a steady 5V DC. If missing, the logic will not boot.
-
-#### 2. Display Communication (JP11 Port)
-
-- Power Pins: Check the outer pins of JP11. You should see 12V.
-  - If 0V: Check for a blown SMD fuse or burnt trace near the port.
-- Data Pins: Inner pins should fluctuate between 3.3V and 5V, showing
-  active serial communication.
-
-#### 3. Signal Simulation (Triggers)
-
-Apply a 12V signal to these pins to test board logic:
-
-- Mains Presence: Apply 12V to JP13 Pin 2.
-- Ignition/D+: Apply 12V to JP6 Pin 1. You should hear the battery
-  coupling relay click.
-
-#### 4. Physical Board Integrity
-
-- Relay Test: Check coils with a multimeter. Healthy coils read between
-  300 and 700 ohms.
-- Solder Fatigue: Check for "ring" cracks on relay pins and high-current
-  terminals caused by vibration and heat cycling.
+- Diagnosed the problem.
 
 ## Voice recognition
 
