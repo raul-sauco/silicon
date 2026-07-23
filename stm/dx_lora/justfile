@@ -1,0 +1,23 @@
+# justfile — DX-LR30 STM32 bring-up helpers
+# requires: cargo-binutils, stm32flash
+
+port := "/dev/ttyUSB0"
+
+# Build, convert to hex, and flash. Put the board in bootloader mode
+# (hold Key/BOOT0, tap Reset, release Key/BOOT0) before running this.
+flash: build
+    stm32flash -w firmware.hex -v -g 0x0 -b 115200 {{port}}
+
+build:
+    cargo build --release
+    cargo objcopy --release -- -O ihex firmware.hex
+
+# Just watch serial output — for when you don't want to reflash,
+# only reopen picocom after a manual reset.
+serial:
+    picocom -b 9600 {{port}}
+
+# Read back current flash contents, in case RDP isn't enabled and you
+# want a fresh backup before overwriting.
+backup:
+    stm32flash -r backup_$(date +%Y%m%d_%H%M%S).hex -g 0x0 {{port}}
