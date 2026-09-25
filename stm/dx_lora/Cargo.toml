@@ -22,9 +22,16 @@ panic-halt = "1.0.0"
 panic-probe = { version = "1.0.0", features = ["print-defmt"], optional = true }
 
 [[bin]]
-name = "dx_lora"
-test = false
-bench = false
+name = "tx_rx"
+path = "src/bin/tx_rx.rs"
+
+[[bin]]
+name = "rx_logger"
+path = "src/bin/rx_logger.rs"
+
+[[bin]]
+name = "tx_beacon"
+path = "src/bin/tx_beacon.rs"
 
 [profile.dev]
 debug = true

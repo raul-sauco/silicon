@@ -16,8 +16,6 @@
 #![no_std]
 #![no_main]
 
-mod fmt;
-
 #[cfg(not(feature = "defmt"))]
 use panic_halt as _;
 #[cfg(feature = "defmt")]
@@ -25,7 +23,6 @@ use {defmt_rtt as _, panic_probe as _};
 
 use core::fmt::Write;
 use embassy_executor::Spawner;
-use embassy_futures::select::{Either, select};
 use embassy_stm32::{
     bind_interrupts,
     exti::ExtiInput,
@@ -35,6 +32,7 @@ use embassy_stm32::{
     time::Hertz,
     usart::{Config as UartConfig, Uart},
 };
+use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, signal::Signal};
 use embassy_time::{Delay, Duration, Timer};
 use lora_phy::{
     LoRa, RxMode,
@@ -53,9 +51,12 @@ bind_interrupts!(struct Irqs {
     EXTI15_10 => embassy_stm32::exti::InterruptHandler<interrupt::typelevel::EXTI15_10>;
 });
 
-const FREQUENCY_HZ: u32 = 915_000_000;
+const FREQUENCY_HZ: u32 = 869_525_000;
 // const FREQUENCY_HZ: u32 = 868_000_000;
 const BAUD_RATE: u32 = 9600;
+const OUTPUT_POWER: i32 = 14;
+
+static LED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
@@ -129,9 +130,6 @@ async fn main(spawner: Spawner) {
 
     uart.write(b"lora init ok\r\n").await.ok();
 
-    // --- read UART, frame by idle-line timeout, transmit whatever arrives ---
-    let mut line = [0u8; 64];
-
     // LoRa RX
     let rx_pkt_params = lora
         .create_rx_packet_params(8, false, 64, true, false, &mdltn_params)
@@ -139,86 +137,34 @@ async fn main(spawner: Spawner) {
     lora.prepare_for_rx(RxMode::Continuous, &mdltn_params, &rx_pkt_params)
         .await
         .unwrap();
-    let mut rx_buf = [0u8; 64];
 
     let led = Output::new(p.PB11, Level::High, Speed::Low);
-    spawner.spawn(blink(led)).unwrap();
-
+    spawner.spawn(led_task(led)).unwrap();
+    let mut seq: u32 = 0;
     loop {
-        match select(
-            read_line(&mut uart, &mut line),
-            lora.rx(&rx_pkt_params, &mut rx_buf),
+        let mut fmt_buf: heapless::String<32> = heapless::String::new();
+        let _ = write!(fmt_buf, "{}", seq);
+        lora.prepare_for_tx(
+            &mdltn_params,
+            &mut tx_params,
+            OUTPUT_POWER,
+            fmt_buf.as_bytes(),
         )
         .await
-        {
-            Either::First(n) if n > 0 => {
-                lora.prepare_for_tx(&mdltn_params, &mut tx_params, 14, &line[..n])
-                    .await
-                    .unwrap();
-                lora.tx().await.unwrap();
-                uart.write(b"tx sent\r\n").await.ok();
-                lora.prepare_for_rx(RxMode::Continuous, &mdltn_params, &rx_pkt_params)
-                    .await
-                    .unwrap();
-            }
-            Either::First(_) => {} // n == 0, e.g. hit Enter on an empty line
-
-            Either::Second(Ok((len, status))) => {
-                uart.write(b"\r\nRX >> ").await.ok();
-                uart.write(&rx_buf[..len as usize]).await.ok();
-
-                let mut fmt_buf: heapless::String<64> = heapless::String::new();
-                let _ = write!(
-                    fmt_buf,
-                    "\r\n RSSI: {} dBm, SNR: {} dB\r\n",
-                    status.rssi, status.snr
-                );
-                uart.write(fmt_buf.as_bytes()).await.ok();
-
-                uart.write(b"\r\n> ").await.ok();
-            }
-            Either::Second(Err(_)) => {}
-        }
+        .unwrap();
+        lora.tx().await.unwrap();
+        seq += 1;
+        LED_SIGNAL.signal(());
+        Timer::after(Duration::from_secs(2)).await;
     }
-}
-
-async fn read_line(uart: &mut Uart<'static, embassy_stm32::mode::Async>, buf: &mut [u8]) -> usize {
-    uart.write(b"\r\n> ").await.ok();
-    let mut n = 0;
-    loop {
-        let mut byte = [0u8; 1];
-        if uart.read(&mut byte).await.is_err() {
-            continue;
-        }
-        match byte[0] {
-            b'\r' | b'\n' => {
-                uart.write(b"\r\n").await.ok();
-                break;
-            }
-            0x08 | 0x7f => {
-                // backspace/delete — erase the last char visually and drop it from buf
-                if n > 0 {
-                    n -= 1;
-                    uart.write(b"\x08 \x08").await.ok();
-                }
-            }
-            b if n < buf.len() => {
-                buf[n] = b;
-                n += 1;
-                uart.write(&[b]).await.ok(); // echo the character
-            }
-            _ => {} // buffer full — drop extra chars, no echo so you know it's full
-        }
-    }
-    n
 }
 
 #[embassy_executor::task]
-async fn blink(mut led: Output<'static>) {
+async fn led_task(mut led: Output<'static>) {
     loop {
+        LED_SIGNAL.wait().await;
         led.set_high();
-        Timer::after(Duration::from_millis(500)).await;
+        Timer::after(Duration::from_millis(100)).await;
         led.set_low();
-        Timer::after(Duration::from_millis(500)).await;
     }
 }

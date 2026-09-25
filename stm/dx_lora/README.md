@@ -48,10 +48,22 @@ firmware, matching the EU 25mW limit (the factory firmware defaults to
 - `stm32flash` (flashing over the UART bootloader)
 - `picocom` or similar (serial terminal), 9600 baud
 
+## Binaries
+
+- `tx_rx` Sample half duplex code. If connected to serial, it will transmit any
+  keypresses via LoRa, it also listens in LoRa and displays any package
+  received via serial.
+- `rx_logger` Sends any packages it receives to the serial connection.
+- `tx_beacon` Sends numbered packages repeatedly.
+
 ## Flashing this project
 
+displays received keypresses.
+
 ```sh
-just flash
+just flash                  # TX/RX sample
+just bin=rx_logger flash    # stationary board
+just bin=tx_beacon flash    # moving board
 ```
 
 No debug probe is used here, so before running `just flash`, put the board

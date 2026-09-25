@@ -2,6 +2,7 @@
 # requires: cargo-binutils, stm32flash
 
 port := "/dev/ttyUSB0"
+bin := "tx_rx"
 
 # Build, convert to hex, and flash. Put the board in bootloader mode
 # (hold Key/BOOT0, tap Reset, release Key/BOOT0) before running this.
@@ -9,8 +10,8 @@ flash: build
     stm32flash -w firmware.hex -v -g 0x0 -b 115200 {{port}}
 
 build:
-    cargo build --release
-    cargo objcopy --release -- -O ihex firmware.hex
+    cargo build --release --bin {{bin}}
+    cargo objcopy --release --bin {{bin}} -- -O ihex firmware.hex
 
 # Just watch serial output — for when you don't want to reflash,
 # only reopen picocom after a manual reset.
