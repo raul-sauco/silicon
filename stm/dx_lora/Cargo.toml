@@ -33,6 +33,10 @@ path = "src/bin/rx_logger.rs"
 name = "tx_beacon"
 path = "src/bin/tx_beacon.rs"
 
+[[bin]]
+name = "flow_meter"
+path = "src/bin/flow_meter.rs"
+
 [profile.dev]
 debug = true
 lto = true
