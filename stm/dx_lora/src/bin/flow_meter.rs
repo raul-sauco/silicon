@@ -21,10 +21,8 @@ use panic_halt as _;
 #[cfg(feature = "defmt")]
 use {defmt_rtt as _, panic_probe as _};
 
-use core::{
-    fmt::Write,
-    sync::atomic::{AtomicU32, Ordering},
-};
+use core::sync::atomic::{AtomicU32, Ordering};
+use dx_lora::{FREQUENCY_HZ, WaterMeterPayload};
 use embassy_executor::Spawner;
 use embassy_stm32::{
     bind_interrupts,
@@ -58,9 +56,8 @@ bind_interrupts!(struct Irqs {
     EXTI0 => embassy_stm32::exti::InterruptHandler<interrupt::typelevel::EXTI0>;
 });
 
-const FREQUENCY_HZ: u32 = 869_525_000;
-// const BAUD_RATE: u32 = 9600;
 const OUTPUT_POWER: i32 = 14;
+const NODE_ID: u8 = 1;
 
 static LED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
 static EDGE_COUNT: AtomicU32 = AtomicU32::new(0);
@@ -78,28 +75,6 @@ type LoraRadio = LoRa<
 async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
 
-    // let mut uart_config = UartConfig::default();
-    // uart_config.baudrate = BAUD_RATE;
-    // let mut uart = Uart::new(
-    //     p.USART1,
-    //     p.PA10,
-    //     p.PA9,
-    //     p.DMA1_CH4,
-    //     p.DMA1_CH5,
-    //     Irqs,
-    //     uart_config,
-    // )
-    // .expect("UART struct");
-    //
-    // uart.write(b"\r\n").await.ok();
-    // uart.write(b"##############################\r\n").await.ok();
-    // uart.write(b"LoRa Flow Meter Firmware\r\n").await.ok();
-    // uart.write(concat!("Firmware v", env!("CARGO_PKG_VERSION"), "\r\n").as_bytes())
-    //     .await
-    //     .ok();
-    // uart.write(b"##############################\r\n").await.ok();
-
-    // SPI1 to SX1262
     let mut spi_config = SpiConfig::default();
     spi_config.frequency = Hertz(1_000_000);
     let spi = Spi::new(
@@ -131,23 +106,18 @@ async fn main(spawner: Spawner) {
         .unwrap();
     spawner.spawn(tx_task(lora)).unwrap();
 
-    // uart.write(b"lora init ok\r\n").await.ok();
-
     let flow_pin = ExtiInput::new(p.PB0, p.EXTI0, Pull::Up, Irqs);
     spawner.spawn(flow_task(flow_pin)).unwrap();
 
     let led = Output::new(p.PB11, Level::High, Speed::Low);
     spawner.spawn(led_task(led)).unwrap();
 
-    loop {
-        LED_SIGNAL.signal(());
-        Timer::after(Duration::from_secs(2)).await;
-    }
+    loop {}
 }
 
 #[embassy_executor::task]
 async fn tx_task(mut lora: LoraRadio) {
-    let mut seq: u32 = 0;
+    let mut seq: u8 = 0;
 
     let mdltn_params = lora
         .create_modulation_params(
@@ -164,13 +134,19 @@ async fn tx_task(mut lora: LoraRadio) {
         .unwrap();
 
     loop {
-        let mut fmt_buf: heapless::String<32> = heapless::String::new();
-        let _ = write!(fmt_buf, "{}: {}", seq, EDGE_COUNT.load(Ordering::Relaxed));
+        let payload = WaterMeterPayload {
+            node_id: NODE_ID,
+            packet_id: seq,
+            edge_count: EDGE_COUNT.load(Ordering::Relaxed),
+            battery_mv: 0, // TODO: compute
+            soc: 0,        // TODO: compute
+            flags: 0,      // TODO: compute
+        };
         lora.prepare_for_tx(
             &mdltn_params,
             &mut tx_params,
             OUTPUT_POWER,
-            fmt_buf.as_bytes(),
+            payload.to_bytes(),
         )
         .await
         .unwrap();

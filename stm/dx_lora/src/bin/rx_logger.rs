@@ -22,6 +22,7 @@ use panic_halt as _;
 use {defmt_rtt as _, panic_probe as _};
 
 use core::fmt::Write;
+use dx_lora::{FREQUENCY_HZ, WaterMeterPayload};
 use embassy_executor::Spawner;
 use embassy_stm32::{
     bind_interrupts,
@@ -51,8 +52,6 @@ bind_interrupts!(struct Irqs {
     EXTI15_10 => embassy_stm32::exti::InterruptHandler<interrupt::typelevel::EXTI15_10>;
 });
 
-const FREQUENCY_HZ: u32 = 869_525_000;
-// const FREQUENCY_HZ: u32 = 868_000_000;
 const BAUD_RATE: u32 = 9600;
 
 static LED_SIGNAL: Signal<CriticalSectionRawMutex, ()> = Signal::new();
@@ -142,13 +141,27 @@ async fn main(spawner: Spawner) {
             .unwrap();
         if let Ok((len, status)) = lora.rx(&rx_pkt_params, &mut rx_buf).await {
             let mut fmt_buf: heapless::String<96> = heapless::String::new();
-            let _ = write!(
-                fmt_buf,
-                "{},{},{}\r\n",
-                core::str::from_utf8(&rx_buf[..len as usize]).unwrap_or("?"),
-                status.rssi,
-                status.snr
-            );
+
+            match WaterMeterPayload::from_bytes(&rx_buf[..len as usize]) {
+                Some(p) => {
+                    let _ = write!(
+                        fmt_buf,
+                        "{},{},{}\r\n",
+                        p.to_log_string(),
+                        status.rssi,
+                        status.snr
+                    );
+                }
+                None => {
+                    let _ = write!(
+                        fmt_buf,
+                        "bad packet len={} rssi={} snr={}\r\n",
+                        core::str::from_utf8(&rx_buf[..len as usize]).unwrap_or("?"),
+                        status.rssi,
+                        status.snr
+                    );
+                }
+            }
             uart.write(fmt_buf.as_bytes()).await.ok();
             LED_SIGNAL.signal(());
         }
